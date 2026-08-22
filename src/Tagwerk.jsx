@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { load, save } from "./storage.js";
+import { buildWeekReportHTML, shareWeekReport } from "./report.js";
 
 /* ---------- Tokens ---------- */
 const C = {
@@ -612,6 +613,30 @@ function WocheView({ entries, cats, catById, weekStart, setWeekStart, now }) {
 
   const range = `${new Date(weekStart).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })} – ${new Date(weekEnd - 86400000).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}`;
 
+  async function shareWeek() {
+    const html = buildWeekReportHTML({
+      range,
+      total,
+      perCat: perCat.map(({ c, ms, notes }) => ({
+        name: c.name,
+        color: c.color,
+        ms,
+        notes,
+      })),
+      perDay: perDay.map((d) => ({
+        n: d.n,
+        ms: d.ms,
+        segments: d.list
+          .slice()
+          .sort((a, b) => a.start - b.start)
+          .map((e) => ({ color: catById[e.catId]?.color ?? C.muted, ms: dur(e) })),
+      })),
+      maxDay,
+    });
+    const fileRange = range.replace(/[^0-9]/g, "-").replace(/-+/g, "-");
+    await shareWeekReport(`Tagwerk-Woche-${fileRange}.html`, html);
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -631,6 +656,16 @@ function WocheView({ entries, cats, catById, weekStart, setWeekStart, now }) {
         <div style={{ background: C.surface, borderColor: C.line }} className="border rounded-xl p-6 text-center text-sm">
           <span style={{ color: C.muted }}>In dieser Woche ist noch nichts erfasst.</span>
         </div>
+      )}
+
+      {total > 0 && (
+        <button
+          onClick={shareWeek}
+          className="tw-btn w-full mb-4 py-3 rounded-xl text-sm font-medium text-white flex items-center justify-center gap-2"
+          style={{ background: C.pine }}
+        >
+          <span aria-hidden="true">↗</span> Woche teilen
+        </button>
       )}
 
       {total > 0 && (
