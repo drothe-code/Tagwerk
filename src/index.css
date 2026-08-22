@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  margin: 0;
+  background: #e9edea;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Monospace fuer Zeiten/Zahlen (tabular-nums), Sans fuer Text.
+   font-mono und font-sans kommen aus Tailwinds Default-Stacks. */
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+}
+
+/* Safe-Area unten (iPhone Home-Indikator) fuer die Tab-Leiste */
+nav {
+  padding-bottom: env(safe-area-inset-bottom);
+}
