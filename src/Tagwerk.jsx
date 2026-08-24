@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { load, save } from "./storage.js";
 import { buildWeekReportHTML, shareWeekReport } from "./report.js";
 import { buildWeekCSV, shareCSV } from "./csv.js";
+import { buildWeekCalendarHTML } from "./calendar.js";
 
 /* ---------- Tokens ---------- */
 const C = {
@@ -654,6 +655,26 @@ function WocheView({ entries, cats, catById, weekStart, setWeekStart, now }) {
     await shareCSV(`Tagwerk-Woche-${fileRange}.csv`, csv);
   }
 
+  async function exportCalendar() {
+    const calDays = perDay.map((d, i) => {
+      const ds = weekStart + i * 86400000;
+      return {
+        label: d.n,
+        date: new Date(ds).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }),
+        entries: d.list.map((e) => ({
+          start: e.start,
+          end: e.end ?? now,
+          color: catById[e.catId]?.color ?? C.muted,
+          name: catById[e.catId]?.name ?? "Gelöschte Kategorie",
+          note: e.note,
+        })),
+      };
+    });
+    const html = buildWeekCalendarHTML({ range, days: calDays });
+    const fileRange = range.replace(/[^0-9]/g, "-").replace(/-+/g, "-");
+    await shareWeekReport(`Tagwerk-Kalender-${fileRange}.html`, html);
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -676,21 +697,30 @@ function WocheView({ entries, cats, catById, weekStart, setWeekStart, now }) {
       )}
 
       {total > 0 && (
-        <div className="flex gap-2 mb-4">
+        <div className="mb-4 space-y-2">
           <button
             onClick={shareWeek}
-            className="tw-btn flex-1 py-3 rounded-xl text-sm font-medium text-white flex items-center justify-center gap-2"
+            className="tw-btn w-full py-3 rounded-xl text-sm font-medium text-white flex items-center justify-center gap-2"
             style={{ background: C.pine }}
           >
             <span aria-hidden="true">↗</span> Woche teilen
           </button>
-          <button
-            onClick={exportCSV}
-            className="tw-btn flex-1 py-3 rounded-xl text-sm font-medium border flex items-center justify-center gap-2"
-            style={{ borderColor: C.pine, color: C.pine }}
-          >
-            <span aria-hidden="true">⭳</span> CSV
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={exportCalendar}
+              className="tw-btn flex-1 py-3 rounded-xl text-sm font-medium border flex items-center justify-center gap-2"
+              style={{ borderColor: C.pine, color: C.pine }}
+            >
+              <span aria-hidden="true">📅</span> Kalender (PDF)
+            </button>
+            <button
+              onClick={exportCSV}
+              className="tw-btn flex-1 py-3 rounded-xl text-sm font-medium border flex items-center justify-center gap-2"
+              style={{ borderColor: C.pine, color: C.pine }}
+            >
+              <span aria-hidden="true">⭳</span> CSV
+            </button>
+          </div>
         </div>
       )}
 
@@ -707,7 +737,7 @@ function WocheView({ entries, cats, catById, weekStart, setWeekStart, now }) {
               <div key={c.id} className="flex items-center gap-3 py-1.5">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: c.color }} />
                 <span className="text-sm flex-1 truncate">{c.name}</span>
-                <span className="font-mono text-sm tabular-nums">{fmtHours(ms)} h</span>
+                <span className="font-mono text-sm tabular-nums">{fmtDur(ms)}</span>
                 <span className="font-mono text-xs tabular-nums w-10 text-right" style={{ color: C.muted }}>
                   {Math.round((ms / total) * 100)}%
                 </span>

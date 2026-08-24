@@ -32,7 +32,7 @@ export function buildWeekReportHTML(data) {
       <div class="row">
         <span class="dot" style="background:${esc(c.color)}"></span>
         <span class="name">${esc(c.name)}</span>
-        <span class="num">${fmtHours(c.ms)} h</span>
+        <span class="num">${fmtDur(c.ms)}</span>
         <span class="num pct">${pct}%</span>
       </div>`;
     })
