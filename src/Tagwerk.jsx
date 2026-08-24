@@ -691,10 +691,23 @@ function WocheView({ entries, cats, catById, weekStart, setWeekStart, now }) {
   async function exportWeek() {
     const days = perDay.map((d, i) => {
       const dObj = new Date(weekStart + i * 86400000);
+      let dVor = 0,
+        dBusy = 0,
+        dPause = 0;
+      d.list.forEach((e) => {
+        const k = kindOf(catById[e.catId]);
+        const ems = dur(e);
+        if (k === "pause") dPause += ems;
+        else if (k === "beschaeftigt") dBusy += ems;
+        else dVor += ems;
+      });
       return {
         title: dObj.toLocaleDateString("de-DE", { weekday: "long" }),
         dateShort: dObj.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }),
         ms: d.ms,
+        vorMs: dVor,
+        busyMs: dBusy,
+        pauseMs: dPause,
         entries: d.list.map((e) => ({
           start: e.start,
           end: e.end ?? now,

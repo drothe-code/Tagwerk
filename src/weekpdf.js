@@ -79,10 +79,20 @@ export function buildWeekPDFHTML(data) {
           </div>`;
         })
         .join("");
+      const dv = d.vorMs || 0;
+      const db = d.busyMs || 0;
+      const dp = d.pauseMs || 0;
+      const split = `<div class="dsplit">
+        <span class="sd" style="background:#1F3D37"></span>Vorankommen ${fmtDur(dv)}
+        <span class="sd" style="background:#6B7A76"></span>Beschäftigt ${fmtDur(db)}${
+        dp > 0 ? ` <span class="sd" style="background:#8A9A95"></span>Pause ${fmtDur(dp)}` : ""
+      }
+      </div>`;
       return `<div class="day">
         <div class="dhead"><span class="dtitle">${esc(d.title)}</span><span class="ddate">${esc(
         d.dateShort
       )}</span><span class="dtot num">${fmtDur(d.ms)}</span></div>
+        ${split}
         ${rows}
       </div>`;
     })
@@ -137,6 +147,9 @@ export function buildWeekPDFHTML(data) {
   .dtitle{ font-size:14px; font-weight:600; }
   .ddate{ font-size:12px; color:var(--muted); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
   .dtot{ margin-left:auto; font-size:14px; }
+  .dsplit{ font-size:11px; color:var(--muted); margin:6px 0 8px; display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; }
+  .dsplit .sd{ width:8px; height:8px; border-radius:50%; display:inline-block; margin-left:6px; }
+  .dsplit .sd:first-child{ margin-left:0; }
   .e{ display:flex; align-items:flex-start; gap:10px; padding:5px 0; }
   .etime{ font-size:11px; color:var(--muted); width:82px; flex:none; padding-top:1px;
           font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
