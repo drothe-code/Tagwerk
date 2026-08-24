@@ -24,6 +24,8 @@ function esc(s) {
             perDay:[{n,ms,segments:[{color,ms}]}], maxDay } */
 export function buildWeekReportHTML(data) {
   const { range, total, perCat, perDay, maxDay } = data;
+  const s = data.summary || { workedMs: 0, vorMs: 0, busyMs: 0, pauseMs: 0 };
+  const pctOf = (a, b) => (b > 0 ? Math.round((a / b) * 100) : 0);
 
   const anteile = perCat
     .map((c) => {
@@ -132,6 +134,14 @@ export function buildWeekReportHTML(data) {
   .nrow{ display:flex; align-items:baseline; gap:12px; padding:4px 0; }
   .ntext{ flex:1; font-size:14px; }
   .nnum{ font-size:12px; color:var(--muted); }
+  .srow{ display:flex; align-items:center; gap:12px; padding:4px 0; }
+  .srow .sname{ flex:1; font-size:14px; }
+  .srow .num{ font-size:14px; }
+  .srow.total{ align-items:baseline; }
+  .srow.total .sname{ font-weight:600; }
+  .srow.total .big{ font-size:22px; }
+  .srow.muted{ color:var(--muted); }
+  .ssub{ font-size:11px; color:var(--muted); margin:-2px 0 6px; }
   .foot{ margin-top:28px; font-size:11px; color:var(--muted); text-align:center; }
   @media print{ body{ background:#fff; } .card{ break-inside:avoid; } }
 </style></head>
@@ -145,6 +155,26 @@ export function buildWeekReportHTML(data) {
   <div class="card">
     <div class="bar">${barSegs}</div>
     ${anteile}
+  </div>
+
+  <div class="card summary">
+    <div class="srow total"><span class="sname">Gesamt gearbeitet</span><span class="num big">${fmtDur(
+      s.workedMs
+    )}</span></div>
+    <div class="ssub">ohne Pause</div>
+    <div class="srow"><span class="dot" style="background:#1F3D37"></span><span class="sname">Vorankommen</span><span class="num">${fmtDur(
+      s.vorMs
+    )}</span><span class="num pct">${pctOf(s.vorMs, s.workedMs)}%</span></div>
+    <div class="srow"><span class="dot" style="background:#6B7A76"></span><span class="sname">Nur beschäftigt</span><span class="num">${fmtDur(
+      s.busyMs
+    )}</span><span class="num pct">${pctOf(s.busyMs, s.workedMs)}%</span></div>
+    ${
+      s.pauseMs > 0
+        ? `<div class="srow muted"><span class="sname" style="padding-left:22px">Pause (zählt nicht)</span><span class="num">${fmtDur(
+            s.pauseMs
+          )}</span><span class="num pct"></span></div>`
+        : ""
+    }
   </div>
 
   <div class="card">

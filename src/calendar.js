@@ -11,6 +11,11 @@ const clock = (ts) => {
   const d = new Date(ts);
   return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
+const fmtDur = (ms) => {
+  const m = Math.max(0, Math.round(ms / 60000));
+  const h = Math.floor(m / 60);
+  return h > 0 ? `${h}:${pad(m % 60)} h` : `${m} min`;
+};
 const esc = (s) =>
   String(s ?? "")
     .replace(/&/g, "&amp;")
@@ -21,6 +26,8 @@ const esc = (s) =>
 /* data = { range, days:[{label,date,entries:[{start,end,color,name,note}]}] } */
 export function buildWeekCalendarHTML(data) {
   const { range, days } = data;
+  const s = data.summary || { workedMs: 0, vorMs: 0, busyMs: 0, pauseMs: 0 };
+  const pctOf = (a, b) => (b > 0 ? Math.round((a / b) * 100) : 0);
 
   // Zeitfenster bestimmen: Standard 7–20 Uhr, bei Bedarf erweitern
   let minStart = 7 * 60;
@@ -99,6 +106,11 @@ export function buildWeekCalendarHTML(data) {
   .range{ font-size:15px; font-weight:600; }
   .pdfbtn{ background:var(--pine); color:#fff; border:0; border-radius:10px;
            padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer; }
+  .summary{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .schip{ display:inline-flex; align-items:center; gap:6px; background:var(--surface);
+          border:1px solid var(--line); border-radius:999px; padding:6px 12px; font-size:12px; }
+  .schip.muted{ color:var(--muted); }
+  .schip .d{ width:9px; height:9px; border-radius:50%; display:inline-block; }
   .cal{ display:grid; grid-template-columns:44px repeat(7,1fr); gap:6px; }
   .axis{ position:relative; }
   .hlabel{ position:absolute; right:4px; transform:translateY(-6px); font-size:10px;
@@ -111,11 +123,14 @@ export function buildWeekCalendarHTML(data) {
   .colbody{ position:relative; }
   .hline{ position:absolute; left:0; right:0; border-top:1px solid #EEF1EF; }
   .block{ position:absolute; left:2px; right:2px; border-radius:5px; color:#fff;
-          padding:2px 5px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.12); }
-  .btime{ display:block; font-size:9px; opacity:.9;
+          padding:3px 6px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.12);
+          display:flex; flex-direction:column; gap:1px; }
+  .btime{ flex:none; font-size:9px; opacity:.85;
           font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
-  .bname{ display:block; font-size:11px; font-weight:600; line-height:1.15; }
-  .bnote{ display:block; font-size:10px; opacity:.92; line-height:1.15; }
+  .bname{ flex:none; font-size:11px; font-weight:600; line-height:1.12;
+          display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .bnote{ font-size:10px; opacity:.94; line-height:1.15; min-height:0;
+          display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
   .foot{ margin-top:20px; font-size:11px; color:var(--muted); text-align:center; }
   @media print{
     @page{ size:A4 landscape; margin:8mm; }
@@ -131,6 +146,20 @@ export function buildWeekCalendarHTML(data) {
       <div class="range">Woche ${esc(range)}</div>
     </div>
     <button class="pdfbtn" onclick="window.print()">Als PDF sichern / Drucken</button>
+  </div>
+  <div class="summary">
+    <span class="schip"><b>Gesamt gearbeitet ${fmtDur(s.workedMs)}</b></span>
+    <span class="schip"><i class="d" style="background:#1F3D37"></i>Vorankommen ${fmtDur(
+      s.vorMs
+    )} (${pctOf(s.vorMs, s.workedMs)}%)</span>
+    <span class="schip"><i class="d" style="background:#6B7A76"></i>Nur beschäftigt ${fmtDur(
+      s.busyMs
+    )} (${pctOf(s.busyMs, s.workedMs)}%)</span>
+    ${
+      s.pauseMs > 0
+        ? `<span class="schip muted">Pause ${fmtDur(s.pauseMs)} · zählt nicht</span>`
+        : ""
+    }
   </div>
   <div class="cal">
     <div class="axis" style="height:${colH + 28}px">

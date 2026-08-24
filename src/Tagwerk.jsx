@@ -16,13 +16,21 @@ const C = {
 };
 
 const DEFAULT_CATS = [
-  { id: "leads", name: "Leads telefonieren", color: "#4338CA", asksNote: false },
-  { id: "makler", name: "Makler-Akquise", color: "#0F766E", asksNote: false },
-  { id: "fina", name: "Finanzierung bearbeiten", color: "#B45309", asksNote: true },
-  { id: "termin", name: "Kundentermin", color: "#BE123C", asksNote: true },
-  { id: "admin", name: "Admin & Orga", color: "#475569", asksNote: false },
-  { id: "entw", name: "Weiterentwicklung", color: "#6D28D9", asksNote: false },
-  { id: "pause", name: "Pause", color: "#8A9A95", asksNote: false },
+  { id: "leads", name: "Leads telefonieren", color: "#4338CA", asksNote: false, kind: "produktiv" },
+  { id: "makler", name: "Makler-Akquise", color: "#0F766E", asksNote: false, kind: "produktiv" },
+  { id: "fina", name: "Finanzierung bearbeiten", color: "#B45309", asksNote: true, kind: "produktiv" },
+  { id: "termin", name: "Kundentermin", color: "#BE123C", asksNote: true, kind: "produktiv" },
+  { id: "admin", name: "Admin & Orga", color: "#475569", asksNote: false, kind: "beschaeftigt" },
+  { id: "entw", name: "Weiterentwicklung", color: "#6D28D9", asksNote: false, kind: "beschaeftigt" },
+  { id: "pause", name: "Pause", color: "#8A9A95", asksNote: false, kind: "pause" },
+];
+
+// Einstufung einer Kategorie: produktiv (Vorankommen) | beschaeftigt | pause (zählt nicht)
+const kindOf = (c) => (c && c.kind ? c.kind : c && c.id === "pause" ? "pause" : "produktiv");
+const KIND_OPTS = [
+  ["produktiv", "Vorankommen"],
+  ["beschaeftigt", "Nur beschäftigt"],
+  ["pause", "Zählt nicht"],
 ];
 
 /* ---------- Helpers ---------- */
@@ -338,37 +346,56 @@ function CatEditor({ cats, setCats }) {
   return (
     <div style={{ background: C.surface, borderColor: C.line }} className="border rounded-xl p-3 mt-3">
       {cats.map((c, i) => (
-        <div key={c.id} className="flex items-center gap-2 py-2">
-          <input
-            type="color"
-            value={c.color}
-            onChange={(e) =>
-              setCats(cats.map((x) => (x.id === c.id ? { ...x, color: e.target.value } : x)))
-            }
-            className="w-7 h-7 rounded border-0 bg-transparent p-0"
-          />
-          <input
-            value={c.name}
-            onChange={(e) =>
-              setCats(cats.map((x) => (x.id === c.id ? { ...x, name: e.target.value } : x)))
-            }
-            className="flex-1 text-sm outline-none bg-transparent border-b pb-1"
-            style={{ borderColor: C.line }}
-          />
-          <button
-            onClick={() => setCats(cats.filter((x) => x.id !== c.id))}
-            className="text-xs px-2 py-1"
-            style={{ color: C.muted }}
-          >
-            ✕
-          </button>
+        <div key={c.id} className="py-2 border-b last:border-b-0" style={{ borderColor: C.line }}>
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={c.color}
+              onChange={(e) =>
+                setCats(cats.map((x) => (x.id === c.id ? { ...x, color: e.target.value } : x)))
+              }
+              className="w-7 h-7 rounded border-0 bg-transparent p-0"
+            />
+            <input
+              value={c.name}
+              onChange={(e) =>
+                setCats(cats.map((x) => (x.id === c.id ? { ...x, name: e.target.value } : x)))
+              }
+              className="flex-1 text-sm outline-none bg-transparent border-b pb-1"
+              style={{ borderColor: C.line }}
+            />
+            <button
+              onClick={() => setCats(cats.filter((x) => x.id !== c.id))}
+              className="text-xs px-2 py-1"
+              style={{ color: C.muted }}
+            >
+              ✕
+            </button>
+          </div>
+          <div className="flex items-center gap-2 mt-2 pl-9">
+            <span className="text-xs" style={{ color: C.muted }}>
+              Zählt als
+            </span>
+            <select
+              value={kindOf(c)}
+              onChange={(e) =>
+                setCats(cats.map((x) => (x.id === c.id ? { ...x, kind: e.target.value } : x)))
+              }
+              className="text-xs border rounded px-2 py-1 bg-transparent"
+              style={{ borderColor: C.line }}
+            >
+              {KIND_OPTS.map(([v, label]) => (
+                <option key={v} value={v}>{label}</option>
+              ))}
+            </select>
+          </div>
         </div>
       ))}
       <button
         onClick={() =>
           setCats([
             ...cats,
-            { id: uid(), name: "Neue Kategorie", color: PALETTE[cats.length % PALETTE.length], asksNote: true },
+            { id: uid(), name: "Neue Kategorie", color: PALETTE[cats.length % PALETTE.length], asksNote: true, kind: "produktiv" },
           ])
         }
         className="mt-2 text-sm font-medium"
@@ -613,12 +640,21 @@ function WocheView({ entries, cats, catById, weekStart, setWeekStart, now }) {
   });
   const maxDay = Math.max(1, ...perDay.map((d) => d.ms));
 
+  // Einstufung: gearbeitet (ohne Pause) + Aufteilung Vorankommen / nur beschäftigt
+  const kindMs = (k) => perCat.filter(({ c }) => kindOf(c) === k).reduce((s, x) => s + x.ms, 0);
+  const vorMs = kindMs("produktiv");
+  const busyMs = kindMs("beschaeftigt");
+  const pauseMs = kindMs("pause");
+  const workedMs = vorMs + busyMs;
+  const summary = { workedMs, vorMs, busyMs, pauseMs };
+
   const range = `${new Date(weekStart).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })} – ${new Date(weekEnd - 86400000).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}`;
 
   async function shareWeek() {
     const html = buildWeekReportHTML({
       range,
       total,
+      summary,
       perCat: perCat.map(({ c, ms, notes }) => ({
         name: c.name,
         color: c.color,
@@ -670,7 +706,7 @@ function WocheView({ entries, cats, catById, weekStart, setWeekStart, now }) {
         })),
       };
     });
-    const html = buildWeekCalendarHTML({ range, days: calDays });
+    const html = buildWeekCalendarHTML({ range, days: calDays, summary });
     const fileRange = range.replace(/[^0-9]/g, "-").replace(/-+/g, "-");
     await shareWeekReport(`Tagwerk-Kalender-${fileRange}.html`, html);
   }
@@ -743,6 +779,38 @@ function WocheView({ entries, cats, catById, weekStart, setWeekStart, now }) {
                 </span>
               </div>
             ))}
+
+            {/* Gesamt gearbeitet + Aufteilung */}
+            <div className="mt-3 pt-3" style={{ borderTop: `1px solid ${C.line}` }}>
+              <div className="flex items-baseline justify-between">
+                <span className="text-sm font-medium">Gesamt gearbeitet</span>
+                <span className="font-mono text-xl tabular-nums">{fmtDur(workedMs)}</span>
+              </div>
+              <div className="text-xs mb-2" style={{ color: C.muted }}>ohne Pause</div>
+              <div className="flex items-center gap-3 py-1">
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: C.pine }} />
+                <span className="text-sm flex-1">Vorankommen</span>
+                <span className="font-mono text-sm tabular-nums">{fmtDur(vorMs)}</span>
+                <span className="font-mono text-xs tabular-nums w-10 text-right" style={{ color: C.muted }}>
+                  {workedMs > 0 ? Math.round((vorMs / workedMs) * 100) : 0}%
+                </span>
+              </div>
+              <div className="flex items-center gap-3 py-1">
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: C.muted }} />
+                <span className="text-sm flex-1">Nur beschäftigt</span>
+                <span className="font-mono text-sm tabular-nums">{fmtDur(busyMs)}</span>
+                <span className="font-mono text-xs tabular-nums w-10 text-right" style={{ color: C.muted }}>
+                  {workedMs > 0 ? Math.round((busyMs / workedMs) * 100) : 0}%
+                </span>
+              </div>
+              {pauseMs > 0 && (
+                <div className="flex items-center gap-3 py-1" style={{ color: C.muted }}>
+                  <span className="text-sm flex-1 pl-5">Pause (zählt nicht)</span>
+                  <span className="font-mono text-sm tabular-nums">{fmtDur(pauseMs)}</span>
+                  <span className="w-10" />
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Tage */}
