@@ -175,7 +175,10 @@ export default function Tagwerk() {
       `}</style>
 
       {/* Header */}
-      <header style={{ background: C.pine }} className="px-5 pt-6 pb-5 text-white">
+      <header
+        style={{ background: C.pine, paddingTop: "calc(env(safe-area-inset-top) + 1.5rem)" }}
+        className="px-5 pb-5 text-white"
+      >
         <div className="flex items-baseline justify-between">
           <h1 className="font-mono text-lg tracking-widest uppercase">Tagwerk</h1>
           <div className="flex items-center gap-3">
@@ -184,7 +187,7 @@ export default function Tagwerk() {
             </span>
             <button
               onClick={() => setShowSettings(true)}
-              className="tw-btn text-lg leading-none opacity-85"
+              className="tw-btn text-xl leading-none opacity-85 p-1 -mr-1"
               aria-label="Einstellungen"
             >
               ⚙
@@ -266,8 +269,8 @@ function SettingsView({ cats, setCats, onClose }) {
   return (
     <div className="fixed inset-0 z-30 overflow-y-auto" style={{ background: C.bg }}>
       <header
-        style={{ background: C.pine }}
-        className="px-5 pt-6 pb-4 text-white sticky top-0 z-10"
+        style={{ background: C.pine, paddingTop: "calc(env(safe-area-inset-top) + 1.5rem)" }}
+        className="px-5 pb-4 text-white sticky top-0 z-10"
       >
         <div className="flex items-center justify-between">
           <h1 className="font-mono text-lg tracking-widest uppercase">Einstellungen</h1>
