@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { load, save } from "./storage.js";
 import { buildWeekReportHTML, shareWeekReport } from "./report.js";
+import { buildWeekCSV, shareCSV } from "./csv.js";
 
 /* ---------- Tokens ---------- */
 const C = {
@@ -637,6 +638,22 @@ function WocheView({ entries, cats, catById, weekStart, setWeekStart, now }) {
     await shareWeekReport(`Tagwerk-Woche-${fileRange}.html`, html);
   }
 
+  async function exportCSV() {
+    const rows = week
+      .slice()
+      .sort((a, b) => a.start - b.start)
+      .map((e) => ({
+        start: e.start,
+        end: e.end ?? now,
+        ms: dur(e),
+        cat: catById[e.catId]?.name ?? "Gelöschte Kategorie",
+        note: e.note,
+      }));
+    const csv = buildWeekCSV(rows, total);
+    const fileRange = range.replace(/[^0-9]/g, "-").replace(/-+/g, "-");
+    await shareCSV(`Tagwerk-Woche-${fileRange}.csv`, csv);
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -659,13 +676,22 @@ function WocheView({ entries, cats, catById, weekStart, setWeekStart, now }) {
       )}
 
       {total > 0 && (
-        <button
-          onClick={shareWeek}
-          className="tw-btn w-full mb-4 py-3 rounded-xl text-sm font-medium text-white flex items-center justify-center gap-2"
-          style={{ background: C.pine }}
-        >
-          <span aria-hidden="true">↗</span> Woche teilen
-        </button>
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={shareWeek}
+            className="tw-btn flex-1 py-3 rounded-xl text-sm font-medium text-white flex items-center justify-center gap-2"
+            style={{ background: C.pine }}
+          >
+            <span aria-hidden="true">↗</span> Woche teilen
+          </button>
+          <button
+            onClick={exportCSV}
+            className="tw-btn flex-1 py-3 rounded-xl text-sm font-medium border flex items-center justify-center gap-2"
+            style={{ borderColor: C.pine, color: C.pine }}
+          >
+            <span aria-hidden="true">⭳</span> CSV
+          </button>
+        </div>
       )}
 
       {total > 0 && (
