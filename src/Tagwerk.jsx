@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { load, save } from "./storage.js";
-import { buildWeekReportHTML, shareWeekReport } from "./report.js";
+import { shareWeekReport } from "./report.js";
 import { buildWeekCSV, shareCSV } from "./csv.js";
-import { buildWeekCalendarHTML } from "./calendar.js";
+import { buildWeekPDFHTML } from "./weekpdf.js";
 
 /* ---------- Tokens ---------- */
 const C = {
@@ -80,6 +80,7 @@ export default function Tagwerk() {
   const [cats, setCats] = useState(DEFAULT_CATS);
   const [entries, setEntries] = useState([]);
   const [tab, setTab] = useState("jetzt");
+  const [showSettings, setShowSettings] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [saveState, setSaveState] = useState("ok");
   const [now, setNow] = useState(Date.now());
@@ -177,9 +178,18 @@ export default function Tagwerk() {
       <header style={{ background: C.pine }} className="px-5 pt-6 pb-5 text-white">
         <div className="flex items-baseline justify-between">
           <h1 className="font-mono text-lg tracking-widest uppercase">Tagwerk</h1>
-          <span className="text-xs opacity-60">
-            {saveState === "error" ? "Nicht gespeichert" : saveState === "saving" ? "sichert …" : "gesichert"}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs opacity-60">
+              {saveState === "error" ? "Nicht gespeichert" : saveState === "saving" ? "sichert …" : "gesichert"}
+            </span>
+            <button
+              onClick={() => setShowSettings(true)}
+              className="tw-btn text-lg leading-none opacity-85"
+              aria-label="Einstellungen"
+            >
+              ⚙
+            </button>
+          </div>
         </div>
         <ActiveBar active={active} cat={active ? catById[active.catId] : null} now={now} />
       </header>
@@ -188,7 +198,6 @@ export default function Tagwerk() {
         {tab === "jetzt" && (
           <JetztView
             cats={cats}
-            setCats={setCats}
             active={active}
             now={now}
             onSwitch={switchTo}
@@ -244,6 +253,41 @@ export default function Tagwerk() {
           </button>
         ))}
       </nav>
+
+      {showSettings && (
+        <SettingsView cats={cats} setCats={setCats} onClose={() => setShowSettings(false)} />
+      )}
+    </div>
+  );
+}
+
+/* ---------- Einstellungen ---------- */
+function SettingsView({ cats, setCats, onClose }) {
+  return (
+    <div className="fixed inset-0 z-30 overflow-y-auto" style={{ background: C.bg }}>
+      <header
+        style={{ background: C.pine }}
+        className="px-5 pt-6 pb-4 text-white sticky top-0 z-10"
+      >
+        <div className="flex items-center justify-between">
+          <h1 className="font-mono text-lg tracking-widest uppercase">Einstellungen</h1>
+          <button onClick={onClose} className="tw-btn text-sm underline opacity-90">
+            Fertig
+          </button>
+        </div>
+      </header>
+      <div className="px-4 py-4 pb-16">
+        <div className="text-xs uppercase tracking-wider mb-2" style={{ color: C.muted }}>
+          Kategorien
+        </div>
+        <p className="text-xs mb-3 leading-relaxed" style={{ color: C.muted }}>
+          Farbe, Name und Einstufung festlegen. Die Einstufung bestimmt die Wochenauswertung:
+          {" "}
+          <b>Vorankommen</b> = bringt dich voran · <b>Nur beschäftigt</b> = nötig, aber kein
+          Fortschritt · <b>Zählt nicht</b> = keine Arbeitszeit (z. B. Pause).
+        </p>
+        <CatEditor cats={cats} setCats={setCats} />
+      </div>
     </div>
   );
 }
@@ -269,8 +313,7 @@ function ActiveBar({ active, cat, now }) {
 }
 
 /* ---------- Jetzt ---------- */
-function JetztView({ cats, setCats, active, now, onSwitch, onStop, onNote }) {
-  const [editing, setEditing] = useState(false);
+function JetztView({ cats, active, now, onSwitch, onStop, onNote }) {
   const cat = active ? cats.find((c) => c.id === active.catId) : null;
 
   return (
@@ -329,14 +372,6 @@ function JetztView({ cats, setCats, active, now, onSwitch, onStop, onNote }) {
         })}
       </div>
 
-      <button
-        onClick={() => setEditing((v) => !v)}
-        className="mt-5 text-xs underline"
-        style={{ color: C.muted }}
-      >
-        {editing ? "Kategorien schließen" : "Kategorien bearbeiten"}
-      </button>
-      {editing && <CatEditor cats={cats} setCats={setCats} />}
     </div>
   );
 }
@@ -650,26 +685,33 @@ function WocheView({ entries, cats, catById, weekStart, setWeekStart, now }) {
 
   const range = `${new Date(weekStart).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })} – ${new Date(weekEnd - 86400000).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}`;
 
-  async function shareWeek() {
-    const html = buildWeekReportHTML({
+  async function exportWeek() {
+    const days = perDay.map((d, i) => {
+      const dObj = new Date(weekStart + i * 86400000);
+      return {
+        title: dObj.toLocaleDateString("de-DE", { weekday: "long" }),
+        dateShort: dObj.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }),
+        ms: d.ms,
+        entries: d.list.map((e) => ({
+          start: e.start,
+          end: e.end ?? now,
+          ms: dur(e),
+          color: catById[e.catId]?.color ?? C.muted,
+          name: catById[e.catId]?.name ?? "Gelöschte Kategorie",
+          note: e.note,
+        })),
+      };
+    });
+    const html = buildWeekPDFHTML({
       range,
-      total,
       summary,
-      perCat: perCat.map(({ c, ms, notes }) => ({
+      perCat: perCat.map(({ c, ms }) => ({
         name: c.name,
         color: c.color,
+        kind: kindOf(c),
         ms,
-        notes,
       })),
-      perDay: perDay.map((d) => ({
-        n: d.n,
-        ms: d.ms,
-        segments: d.list
-          .slice()
-          .sort((a, b) => a.start - b.start)
-          .map((e) => ({ color: catById[e.catId]?.color ?? C.muted, ms: dur(e) })),
-      })),
-      maxDay,
+      days,
     });
     const fileRange = range.replace(/[^0-9]/g, "-").replace(/-+/g, "-");
     await shareWeekReport(`Tagwerk-Woche-${fileRange}.html`, html);
@@ -689,26 +731,6 @@ function WocheView({ entries, cats, catById, weekStart, setWeekStart, now }) {
     const csv = buildWeekCSV(rows, total);
     const fileRange = range.replace(/[^0-9]/g, "-").replace(/-+/g, "-");
     await shareCSV(`Tagwerk-Woche-${fileRange}.csv`, csv);
-  }
-
-  async function exportCalendar() {
-    const calDays = perDay.map((d, i) => {
-      const ds = weekStart + i * 86400000;
-      return {
-        label: d.n,
-        date: new Date(ds).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }),
-        entries: d.list.map((e) => ({
-          start: e.start,
-          end: e.end ?? now,
-          color: catById[e.catId]?.color ?? C.muted,
-          name: catById[e.catId]?.name ?? "Gelöschte Kategorie",
-          note: e.note,
-        })),
-      };
-    });
-    const html = buildWeekCalendarHTML({ range, days: calDays, summary });
-    const fileRange = range.replace(/[^0-9]/g, "-").replace(/-+/g, "-");
-    await shareWeekReport(`Tagwerk-Kalender-${fileRange}.html`, html);
   }
 
   return (
@@ -733,30 +755,21 @@ function WocheView({ entries, cats, catById, weekStart, setWeekStart, now }) {
       )}
 
       {total > 0 && (
-        <div className="mb-4 space-y-2">
+        <div className="mb-4">
           <button
-            onClick={shareWeek}
-            className="tw-btn w-full py-3 rounded-xl text-sm font-medium text-white flex items-center justify-center gap-2"
+            onClick={exportWeek}
+            className="tw-btn w-full py-3.5 rounded-xl text-sm font-medium text-white flex items-center justify-center gap-2"
             style={{ background: C.pine }}
           >
-            <span aria-hidden="true">↗</span> Woche teilen
+            <span aria-hidden="true">📄</span> Wochenauswertung erstellen (PDF)
           </button>
-          <div className="flex gap-2">
-            <button
-              onClick={exportCalendar}
-              className="tw-btn flex-1 py-3 rounded-xl text-sm font-medium border flex items-center justify-center gap-2"
-              style={{ borderColor: C.pine, color: C.pine }}
-            >
-              <span aria-hidden="true">📅</span> Kalender (PDF)
-            </button>
-            <button
-              onClick={exportCSV}
-              className="tw-btn flex-1 py-3 rounded-xl text-sm font-medium border flex items-center justify-center gap-2"
-              style={{ borderColor: C.pine, color: C.pine }}
-            >
-              <span aria-hidden="true">⭳</span> CSV
-            </button>
-          </div>
+          <button
+            onClick={exportCSV}
+            className="mt-2 w-full text-xs underline"
+            style={{ color: C.muted }}
+          >
+            Stattdessen als CSV-Tabelle
+          </button>
         </div>
       )}
 
