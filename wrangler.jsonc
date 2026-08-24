@@ -1,0 +1,10 @@
+{
+  // Cloudflare Workers – statische Auslieferung der gebauten App (dist/)
+  "name": "tagwerk",
+  "compatibility_date": "2025-08-01",
+  "assets": {
+    "directory": "./dist",
+    // SPA: unbekannte Pfade auf index.html zurückfallen lassen
+    "not_found_handling": "single-page-application"
+  }
+}
