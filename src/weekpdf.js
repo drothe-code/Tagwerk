@@ -24,7 +24,7 @@ const pctOf = (a, b) => (b > 0 ? Math.round((a / b) * 100) : 0);
 const KIND_LABEL = {
   produktiv: "Vorankommen",
   beschaeftigt: "Beschäftigt",
-  pause: "Pause",
+  pause: "Nicht gezählt",
 };
 
 /* data = {
@@ -85,7 +85,7 @@ export function buildWeekPDFHTML(data) {
       const split = `<div class="dsplit">
         <span class="sd" style="background:#1F3D37"></span>Vorankommen ${fmtDur(dv)}
         <span class="sd" style="background:#6B7A76"></span>Beschäftigt ${fmtDur(db)}${
-        dp > 0 ? ` <span class="sd" style="background:#8A9A95"></span>Pause ${fmtDur(dp)}` : ""
+        dp > 0 ? ` <span class="sd" style="background:#8A9A95"></span>Nicht gezählt ${fmtDur(dp)}` : ""
       }
       </div>`;
       return `<div class="day">
@@ -194,7 +194,7 @@ export function buildWeekPDFHTML(data) {
     )}</span><span class="num pct">${pctOf(s.busyMs, s.workedMs)}%</span></div>
     ${
       s.pauseMs > 0
-        ? `<div class="srow" style="color:var(--muted)"><span class="dot" style="background:#8A9A95"></span><span class="nm">Pause (zählt nicht)</span><span class="num">${fmtDur(
+        ? `<div class="srow" style="color:var(--muted)"><span class="dot" style="background:#8A9A95"></span><span class="nm">Nicht gezählt</span><span class="num">${fmtDur(
             s.pauseMs
           )}</span><span class="pct"></span></div>`
         : ""

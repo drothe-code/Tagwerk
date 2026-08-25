@@ -287,7 +287,8 @@ function SettingsView({ cats, setCats, onClose }) {
           Farbe, Name und Einstufung festlegen. Die Einstufung bestimmt die Wochenauswertung:
           {" "}
           <b>Vorankommen</b> = bringt dich voran · <b>Nur beschäftigt</b> = nötig, aber kein
-          Fortschritt · <b>Zählt nicht</b> = keine Arbeitszeit (z. B. Pause).
+          Fortschritt · <b>Zählt nicht</b> = wird erfasst, aber nicht als Arbeitszeit gerechnet
+          (z. B. Pause oder Privates).
         </p>
         <CatEditor cats={cats} setCats={setCats} />
       </div>
@@ -834,7 +835,7 @@ function WocheView({ entries, cats, catById, weekStart, setWeekStart, now }) {
               </div>
               {pauseMs > 0 && (
                 <div className="flex items-center gap-3 py-1" style={{ color: C.muted }}>
-                  <span className="text-sm flex-1 pl-5">Pause (zählt nicht)</span>
+                  <span className="text-sm flex-1 pl-5">Nicht gezählt</span>
                   <span className="font-mono text-sm tabular-nums">{fmtDur(pauseMs)}</span>
                   <span className="w-10" />
                 </div>
