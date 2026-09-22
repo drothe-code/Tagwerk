@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tagwerk – Einführung & Installation</title>
+  <meta name="theme-color" content="#1F3D37">
+  <meta name="description" content="Tagwerk – einfache Zeiterfassung mit One-Tap-Umschalten und Wochenauswertung. So installierst und nutzt du die App.">
+  <style>
+    :root{
+      --bg:#E9EDEA; --surface:#FFFFFF; --ink:#131A18; --muted:#6B7A76;
+      --line:#D3DAD6; --pine:#1F3D37;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; }
+    body{
+      background:var(--bg); color:var(--ink);
+      font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      -webkit-font-smoothing:antialiased; line-height:1.5;
+    }
+    .mono{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .wrap{ max-width:600px; margin:0 auto; }
+    header.hero{
+      background:var(--pine); color:#fff;
+      padding:calc(env(safe-area-inset-top) + 40px) 24px 36px;
+      text-align:center;
+    }
+    .icon{ width:76px; height:76px; border-radius:18px; display:block; margin:0 auto 16px;
+           box-shadow:0 6px 20px rgba(0,0,0,.25); }
+    .brand{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+            letter-spacing:.22em; text-transform:uppercase; font-size:22px; margin:0; }
+    .tag{ opacity:.75; font-size:15px; margin:8px 0 0; }
+    main{ padding:24px 20px 48px; }
+    .cta{
+      display:block; text-align:center; text-decoration:none;
+      background:var(--pine); color:#fff; font-weight:600; font-size:16px;
+      padding:16px; border-radius:14px; margin:0 0 8px;
+    }
+    .cta.small{ font-size:14px; padding:14px; }
+    .cta-hint{ text-align:center; font-size:12px; color:var(--muted); margin:0 0 24px; }
+    h2{ font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted);
+        margin:32px 0 12px; font-weight:600; }
+    .card{ background:var(--surface); border:1px solid var(--line); border-radius:14px;
+           padding:18px 18px; margin-bottom:14px; }
+    .card p{ margin:0 0 10px; }
+    .card p:last-child{ margin-bottom:0; }
+    .platform{ font-weight:700; font-size:15px; margin:0 0 10px; display:flex; align-items:center; gap:8px; }
+    ol{ margin:0; padding-left:20px; }
+    ol li{ margin:6px 0; }
+    ol li b{ font-weight:600; }
+    .feat{ display:flex; gap:12px; padding:9px 0; align-items:flex-start; }
+    .feat + .feat{ border-top:1px solid var(--line); }
+    .dot{ width:12px; height:12px; border-radius:50%; flex:none; margin-top:5px; }
+    .feat .t{ font-weight:600; }
+    .feat .d{ color:var(--muted); font-size:14px; }
+    .note{ background:#EEF2F0; border:1px solid var(--line); border-radius:12px;
+           padding:14px 16px; font-size:14px; color:#2c3a36; }
+    .note b{ color:var(--ink); }
+    footer{ text-align:center; color:var(--muted); font-size:12px; padding:8px 20px 40px; }
+    .kbd{ display:inline-block; border:1px solid var(--line); border-radius:6px;
+          padding:0 6px; background:#fff; font-size:13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <img class="icon" src="/icon-192.png" alt="Tagwerk">
+      <h1 class="brand">Tagwerk</h1>
+      <p class="tag">Zeiterfassung, die verzeiht.</p>
+    </header>
+
+    <main>
+      <a class="cta" href="/">Tagwerk öffnen →</a>
+      <p class="cta-hint">Danach unten die Anleitung: einmal „Zum Home-Bildschirm" – fertig.</p>
+
+      <h2>Was ist Tagwerk?</h2>
+      <div class="card">
+        <p>Eine kleine App, um den Arbeitstag mit <b>minimalem Aufwand</b> zu erfassen.
+        Ein Tipp auf eine Tätigkeit beendet die laufende und startet die neue –
+        <b>kein Start/Stopp</b>, kein Aufwand.</p>
+        <p>Am Wochenende siehst du auf einen Blick, wie viel Zeit in was geflossen ist –
+        inklusive einer Auswertung <b>„Vorankommen" gegen „nur beschäftigt"</b> und einer
+        druckbaren Wochenübersicht (PDF).</p>
+        <p>Alles läuft <b>lokal und privat</b> auf deinem Gerät – kein Konto, keine Anmeldung.</p>
+      </div>
+
+      <h2>In 20 Sekunden installiert</h2>
+      <div class="card">
+        <p class="platform">📱 iPhone / iPad (mit <b>Safari</b>)</p>
+        <ol>
+          <li>Diese Seite in <b>Safari</b> öffnen (nicht in einer anderen App).</li>
+          <li>Unten auf das <b>Teilen-Symbol</b> tippen <span class="kbd">⬆️</span> (Quadrat mit Pfeil nach oben).</li>
+          <li>Etwas nach unten scrollen → <b>„Zum Home-Bildschirm"</b>.</li>
+          <li>Oben rechts <b>„Hinzufügen"</b>.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <p class="platform">🤖 Android (mit <b>Chrome</b>)</p>
+        <ol>
+          <li>Diese Seite in <b>Chrome</b> öffnen.</li>
+          <li>Oben rechts das <b>Menü</b> <span class="kbd">⋮</span> antippen.</li>
+          <li><b>„App installieren"</b> bzw. <b>„Zum Startbildschirm hinzufügen"</b> wählen.</li>
+        </ol>
+      </div>
+      <div class="note">
+        Danach liegt <b>Tagwerk</b> als App-Kachel auf dem Startbildschirm und öffnet im
+        Vollbild – wie eine normale App. Kein App-Store, kein Download nötig.
+      </div>
+
+      <h2>So funktioniert's</h2>
+      <div class="card">
+        <div class="feat"><span class="dot" style="background:#1F3D37"></span>
+          <div><span class="t">Jetzt</span><br><span class="d">Tippe eine Kategorie an – sie läuft. Tippst du eine andere an, wird gewechselt. Notiz optional direkt dazuschreiben.</span></div></div>
+        <div class="feat"><span class="dot" style="background:#B45309"></span>
+          <div><span class="t">Tag</span><br><span class="d">Alle Einträge des Tages ansehen, Zeiten korrigieren, Lücken nachtragen. Die App verzeiht vergessenes Umschalten.</span></div></div>
+        <div class="feat"><span class="dot" style="background:#0F766E"></span>
+          <div><span class="t">Woche</span><br><span class="d">Gesamtstunden, Aufteilung Vorankommen/beschäftigt, und eine fertige Wochenauswertung als PDF (mit Notizen, Tag für Tag).</span></div></div>
+        <div class="feat"><span class="dot" style="background:#6B7A76"></span>
+          <div><span class="t">Einstellungen (⚙ oben rechts)</span><br><span class="d">Eigene Kategorien anlegen, Farben wählen und festlegen, ob sie als „Vorankommen", „nur beschäftigt" oder „zählt nicht" (z. B. Pause) gewertet werden.</span></div></div>
+      </div>
+
+      <h2>Gut zu wissen</h2>
+      <div class="note">
+        <p style="margin:0 0 8px"><b>Deine Daten bleiben auf deinem Gerät.</b> Damit nichts verloren geht:
+        die App-Kachel <b>nicht löschen</b> und in den Safari-Einstellungen keine <b>„Website-Daten"</b> löschen.</p>
+        <p style="margin:0"><b>Updates kommen automatisch:</b> Verbesserungen erscheinen beim nächsten Öffnen – ohne Neu-Installieren.</p>
+      </div>
+
+      <a class="cta small" href="/" style="margin-top:28px">Jetzt Tagwerk öffnen →</a>
+    </main>
+
+    <footer>Tagwerk · Zeiterfassung für den Arbeitstag</footer>
+  </div>
+</body>
+</html>
